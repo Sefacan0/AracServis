@@ -1,0 +1,76 @@
+﻿@model AracServis.Models.Randevu
+@{
+    ViewData["Title"] = "Servis Randevusu Oluştur";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <div class="text-center mb-4">
+                <i class="bi bi-calendar2-check text-primary display-4 mb-3 d-block"></i>
+                <h2 class="fw-bold">Servis Randevusu Al</h2> <p class="text-muted">Aracınızın plakasını, şikayetinizi ve varsa hasar görselini ekleyin.</p>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <form asp-controller="Musteri" asp-action="RandevuAl" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label asp-for="AracPlaka" class="form-label fw-bold text-secondary">Araç Plakası <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg shadow-sm">
+                                <span class="input-group-text bg-light text-dark fw-bold border-end-0">TR</span>
+                                <input asp-for="AracPlaka" class="form-control text-uppercase fw-bold border-start-0" placeholder="32 ABC 123" required autocomplete="off" />
+                            </div>
+                            <span asp-validation-for="AracPlaka" class="text-danger small mt-1 d-block"></span>
+                            <div class="form-text">Lütfen plakanızı aralarda boşluk olacak şekilde giriniz.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SikayetAciklamasi" class="form-label fw-bold text-secondary">Şikayetiniz veya Talebiniz <span class="text-danger">*</span></label>
+                            <textarea asp-for="SikayetAciklamasi" class="form-control shadow-sm" rows="3" placeholder="Örn: Frene basınca ses geliyor..." required></textarea>
+                            <span asp-validation-for="SikayetAciklamasi" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold text-secondary">Arıza / Hasar Görseli (Opsiyonel)</label>
+                            <div class="input-group shadow-sm">
+                                <input type="file" name="GorselDosyasi" class="form-control" accept="image/*" id="gorselInput">
+                                <label class="input-group-text" for="gorselInput"><i class="bi bi-camera-fill"></i></label>
+                            </div>
+                            <div class="form-text">Mümkünse arızalı bölgenin net bir fotoğrafını yükleyiniz.</div>
+                        </div>
+
+                        <div class="alert alert-primary bg-primary bg-opacity-10 border-0 d-flex align-items-center mb-4 rounded-3">
+                            <i class="bi bi-info-circle-fill fs-4 text-primary me-3"></i>
+                            <div class="small">
+                                Randevunuz onaylandığında "Araçlarım" sekmesinden durumu takip edebilirsiniz.
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow">
+                                <i class="bi bi-send-fill me-2"></i> Randevu Talebi Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard'a Dön
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

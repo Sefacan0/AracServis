@@ -1,0 +1,97 @@
+﻿@model IEnumerable<AracServis.Models.Kullanicilar>
+@{
+    ViewData["Title"] = "Başvuru Yönetimi";
+}
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center rounded-top-4 py-3">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill text-warning me-2"></i> Onay Bekleyen Başvurular</h4>
+            <span class="badge bg-warning text-dark fs-6 shadow-sm">@Model.Count() Yeni Başvuru</span>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ad Soyad</th>
+                            <th>Kullanıcı Adı</th>
+                            <th>Başvuru Rolü</th>
+                            <th class="text-end pe-4">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="bi bi-emoji-smile d-block mb-3" style="font-size: 3rem;"></i>
+                                    <h5 class="fw-bold">Harika!</h5>
+                                    Şu an onay bekleyen herhangi bir başvuru bulunmuyor.
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">
+                                    <i class="bi bi-person-circle me-1 text-muted"></i> @item.AdSoyad
+                                </td>
+                                <td><span class="badge bg-light text-dark border shadow-sm px-2 py-1 fs-6">@@@item.KullaniciAdi</span></td>
+                                <td>
+                                    @if (item.Rol?.RolAdi == "Çalışan")
+                                    {
+                                        <span class="badge bg-info text-dark shadow-sm px-3 py-2">Mekanik Personel</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary text-white shadow-sm px-3 py-2">Müşteri</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group shadow-sm rounded-pill">
+                                        <form asp-action="CalisanOnayla" asp-route-id="@item.KullaniciId" method="post" class="m-0 p-0">
+                                            <button type="submit" class="btn btn-success btn-sm rounded-start-pill px-3 fw-bold" style="padding-top: 8px; padding-bottom: 8px;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Onayla
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-danger btn-sm rounded-end-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#redModal-@item.KullaniciId" style="padding-top: 8px; padding-bottom: 8px;">
+                                            <i class="bi bi-x-circle-fill me-1"></i> Reddet
+                                        </button>
+                                    </div>
+
+                                    <div class="modal fade text-start" id="redModal-@item.KullaniciId" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content border-0 shadow-lg rounded-4">
+                                                <div class="modal-header bg-danger text-white border-0 rounded-top-4">
+                                                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Başvuruyu Reddet</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="KullaniciReddet" method="post">
+                                                    <div class="modal-body p-4">
+                                                        <input type="hidden" name="id" value="@item.KullaniciId" />
+                                                        <p class="text-muted"><strong>@item.AdSoyad</strong> adlı kullanıcının başvurusunu reddetmek üzeresiniz.</p>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold text-dark">Reddetme Nedeni (Kullanıcıya Gösterilecek)</label>
+                                                            <textarea name="redNedeni" class="form-control shadow-sm border-danger" rows="3" placeholder="Örn: Bilgileriniz eksik veya spam hesap şüphesi." required maxlength="250"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer bg-light border-0 rounded-bottom-4">
+                                                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">İptal</button>
+                                                        <button type="submit" class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm">
+                                                            <i class="bi bi-send-fill me-1"></i> Reddet ve Bildir
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

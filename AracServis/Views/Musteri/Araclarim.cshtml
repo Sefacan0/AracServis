@@ -1,0 +1,200 @@
+﻿@model IEnumerable<AracServis.Models.IsEmirleri>
+@{
+    ViewData["Title"] = "Araçlarım ve İşlem Geçmişi";
+    var bekleyenRandevular = ViewBag.BekleyenRandevular as IEnumerable<AracServis.Models.Randevu>;
+    
+    // BÜYÜK DOKUNUŞ: Controller'dan gönderdiğimiz müşterinin geçmiş yorumlarını burada yakalıyoruz
+    var musteriYorumlari = ViewBag.MusteriYorumlari as IEnumerable<AracServis.Models.Yorum>;
+}
+
+<div class="container-fluid mt-4 mb-5">
+    <h2 class="fw-bold mb-4 text-dark"><i class="bi bi-car-front-fill text-primary me-2"></i> Garajdaki ve Geçmiş Araçlarım</h2>
+
+    @if (!Model.Any() && (bekleyenRandevular == null || !bekleyenRandevular.Any()))
+    {
+        <div class="alert alert-light shadow-sm border-0 rounded-4 p-5 text-center">
+            <i class="bi bi-info-circle text-muted display-4 d-block mb-3"></i>
+            <h5 class="fw-bold text-dark">Sistemde herhangi bir kaydınız bulunmuyor.</h5>
+            <p class="text-muted">Yeni bir servis kaydı için <a asp-controller="Musteri" asp-action="RandevuAl" class="fw-bold text-primary text-decoration-none">Randevu Alın</a>.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            
+            <!-- ========================================== -->
+            <!-- 1. ONAY BEKLEYEN YENİ RANDEVULAR           -->
+            <!-- ========================================== -->
+            @if (bekleyenRandevular != null)
+            {
+                @foreach (var randevu in bekleyenRandevular)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm border-0 rounded-4 h-100 border-warning border-start border-4">
+                            <div class="card-header bg-dark text-white rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold">TR | @randevu.AracPlaka</h5>
+                                <span class="badge bg-warning text-dark px-3 py-2 shadow-sm"><i class="bi bi-hourglass-split me-1"></i> Onay Bekliyor</span>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <p class="text-muted small fw-bold mb-0">Talep Tarihi: @randevu.TalepTarihi.ToString("dd MMM yyyy, HH:mm")</p>
+                                <hr class="border-secondary opacity-25" />
+                                
+                                <div class="d-flex gap-2 mt-auto pt-3">
+                                    <a asp-action="RandevuGuncelle" asp-route-id="@randevu.RandevuId" class="btn btn-warning fw-bold rounded-pill shadow-sm w-50 text-dark">
+                                        <i class="bi bi-pencil-fill me-1"></i> Düzenle
+                                    </a>
+                                    
+                                    <form asp-action="RandevuIptal" asp-route-id="@randevu.RandevuId" method="post" class="w-50" onsubmit="return confirm('Randevu talebinizi iptal etmek istediğinize emin misiniz?');">
+                                        <button type="submit" class="btn btn-outline-danger fw-bold rounded-pill shadow-sm w-100">
+                                            <i class="bi bi-x-circle-fill me-1"></i> İptal Et
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- ========================================== -->
+            <!-- 2. GARAJDAKİ VE GEÇMİŞ ARAÇLAR (İŞ EMİRLERİ)-->
+            <!-- ========================================== -->
+            @foreach (var isEmri in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: #f8f9fa;">
+                        <div class="card-header bg-dark text-white rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">TR | @isEmri.AracPlaka</h5>
+                            @{
+                                string br = "bg-secondary";
+                                if (isEmri.Durum == AracServis.Models.IsEmriDurumu.Bekliyor) { br = "bg-warning text-dark"; }
+                                else if (isEmri.Durum == AracServis.Models.IsEmriDurumu.Islemde) { br = "bg-primary"; }
+                                else if (isEmri.Durum == AracServis.Models.IsEmriDurumu.Tamamlandi) { br = "bg-success"; }
+                                else if (isEmri.Durum == AracServis.Models.IsEmriDurumu.TeslimEdildi) { br = "bg-dark border border-secondary"; }
+                            }
+                            <span class="badge @br px-3 py-2 shadow-sm">@(isEmri.DurumBilgisi?.DurumAdi ?? isEmri.Durum.ToString())</span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <p class="text-muted small fw-bold mb-2">Giriş: @isEmri.AcilisTarihi?.ToString("dd MMM yyyy, HH:mm")</p>
+                            
+                            <div class="d-grid gap-2 mt-auto pt-3">
+                                <a asp-controller="Musteri" asp-action="AracDetay" asp-route-id="@isEmri.IsEmriId" class="btn btn-outline-dark fw-bold rounded-pill shadow-sm px-4 py-2">
+                                    <i class="bi bi-search me-1"></i> Fatura ve İşlem Detayları
+                                </a>
+                                
+                                @if (isEmri.Durum == AracServis.Models.IsEmriDurumu.TeslimEdildi)
+                                {
+                                    // Müşterinin bu araca ait yaptığı yorumu buluyoruz
+                                    var yapilanYorum = musteriYorumlari?.FirstOrDefault(y => y.IsEmriId == isEmri.IsEmriId);
+
+                                    if (yapilanYorum == null)
+                                    {
+                                        <!-- YORUM HİÇ YAPILMAMIŞSA ÇIKACAK BUTON -->
+                                        <button class="btn btn-warning fw-bold rounded-pill shadow-sm text-dark px-4 py-2 mt-2" data-bs-toggle="modal" data-bs-target="#yorumModal-@isEmri.IsEmriId">
+                                            <i class="bi bi-star-fill text-dark me-1"></i> İşletmeyi Değerlendir
+                                        </button>
+                                        
+                                        <!-- İLK DEFA YORUM YAPMA MODALI -->
+                                        <div class="modal fade" id="yorumModal-@isEmri.IsEmriId" tabindex="-1">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content border-0 shadow-lg rounded-4">
+                                                    <div class="modal-header bg-warning text-dark border-0 rounded-top-4">
+                                                        <h5 class="modal-title fw-bold"><i class="bi bi-star-half me-2"></i> Hizmetimizi Değerlendirin</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form asp-controller="Yorumlar" asp-action="YorumYap" method="post">
+                                                        <div class="modal-body p-4 text-start">
+                                                            <input type="hidden" name="isEmriId" value="@isEmri.IsEmriId" />
+                                                            <div class="text-center mb-4">
+                                                                <h6 class="fw-bold text-dark">TR | @isEmri.AracPlaka Plakalı Aracınız</h6>
+                                                                <small class="text-secondary">Aldığınız hizmetten ne kadar memnun kaldınız?</small>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold text-dark">Puanınız</label>
+                                                                <select name="puan" class="form-select border-warning shadow-sm" required>
+                                                                    <option value="" disabled selected>Puan Seçin...</option>
+                                                                    <option value="5">⭐⭐⭐⭐⭐ (5) Mükemmel</option>
+                                                                    <option value="4">⭐⭐⭐⭐ (4) Çok İyi</option>
+                                                                    <option value="3">⭐⭐⭐ (3) Ortalama</option>
+                                                                    <option value="2">⭐⭐ (2) Kötü</option>
+                                                                    <option value="1">⭐ (1) Berbat</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold text-dark">Yorumunuz</label>
+                                                                <textarea name="yorumMetni" class="form-control border-warning shadow-sm" rows="3" placeholder="İşletme sahibi ve ustalarımız hakkında ne düşünüyorsunuz?" required maxlength="500"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer bg-light border-0 rounded-bottom-4">
+                                                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Vazgeç</button>
+                                                            <button type="submit" class="btn btn-dark fw-bold rounded-pill px-4 shadow-sm">Gönder</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <!-- YORUM ZATEN VAR, 14 GÜN GEÇMİŞ Mİ DİYE BAKIYORUZ -->
+                                        var gecenGun = (DateTime.Now - yapilanYorum.YorumTarihi).TotalDays;
+
+                                        if (gecenGun <= 14)
+                                        {
+                                            <!-- 14 GÜN DOLMAMIŞ: GÜNCELLEME BUTONU -->
+                                            <button class="btn btn-outline-warning fw-bold rounded-pill shadow-sm text-dark px-4 py-2 mt-2" data-bs-toggle="modal" data-bs-target="#yorumGuncelleModal-@yapilanYorum.YorumId">
+                                                <i class="bi bi-pencil-square me-1"></i> Yorumu Güncelle <small>(@(14 - (int)gecenGun) Gün Kaldı)</small>
+                                            </button>
+                                            
+                                            <!-- YORUM GÜNCELLEME MODALI -->
+                                            <div class="modal fade" id="yorumGuncelleModal-@yapilanYorum.YorumId" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content border-0 shadow-lg rounded-4">
+                                                        <div class="modal-header bg-warning text-dark border-0 rounded-top-4">
+                                                            <h5 class="modal-title fw-bold"><i class="bi bi-pencil-fill me-2"></i> Yorumunuzu Güncelleyin</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form asp-controller="Yorumlar" asp-action="YorumGuncelle" method="post">
+                                                            <div class="modal-body p-4 text-start">
+                                                                <input type="hidden" name="yorumId" value="@yapilanYorum.YorumId" />
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold text-dark">Puanınız</label>
+                                                                    <select name="puan" class="form-select border-warning shadow-sm" required>
+                                                                        <option value="5" selected="@(yapilanYorum.Puan == 5 ? "selected" : null)">⭐⭐⭐⭐⭐ (5) Mükemmel</option>
+                                                                        <option value="4" selected="@(yapilanYorum.Puan == 4 ? "selected" : null)">⭐⭐⭐⭐ (4) Çok İyi</option>
+                                                                        <option value="3" selected="@(yapilanYorum.Puan == 3 ? "selected" : null)">⭐⭐⭐ (3) Ortalama</option>
+                                                                        <option value="2" selected="@(yapilanYorum.Puan == 2 ? "selected" : null)">⭐⭐ (2) Kötü</option>
+                                                                        <option value="1" selected="@(yapilanYorum.Puan == 1 ? "selected" : null)">⭐ (1) Berbat</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold text-dark">Yorumunuz</label>
+                                                                    <textarea name="yorumMetni" class="form-control border-warning shadow-sm" rows="3" required>@yapilanYorum.YorumMetni</textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer bg-light border-0 rounded-bottom-4">
+                                                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">İptal</button>
+                                                                <button type="submit" class="btn btn-dark fw-bold rounded-pill px-4 shadow-sm">Değişikliği Kaydet</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <!-- 14 GÜN DOLMUŞ: BUTON TIKLANAMAZ DURUMDA -->
+                                            <button class="btn btn-secondary fw-bold rounded-pill shadow-sm px-4 py-2 mt-2 opacity-50" disabled>
+                                                <i class="bi bi-check-all me-1"></i> Değerlendirildi
+                                            </button>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Sistem Uyarısı";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Controller'dan gelen verileri yakalıyoruz
+    string hataKodu = ViewBag.HataKodu?.ToString() ?? "Hata";
+    string mesaj = ViewBag.Mesaj?.ToString() ?? "Sistemde beklenmeyen bir durum oluştu.";
+}
+
+<div class="container text-center mt-5 mb-5">
+    
+    <!-- Hata koduna göre dinamik ikon gösterimi -->
+    @if (hataKodu == "404")
+    {
+        <i class="bi bi-search text-warning" style="font-size: 6rem;"></i>
+    }
+    else if (hataKodu == "403")
+    {
+        <i class="bi bi-shield-lock-fill text-danger" style="font-size: 6rem;"></i>
+    }
+    else
+    {
+        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 6rem;"></i>
+    }
+
+    <h1 class="fw-bold mt-3">@hataKodu - Sistem Uyarısı</h1>
+    <p class="text-muted fs-5 mt-3 mb-4">@mesaj</p>
+    
+    <a asp-controller="Home" asp-action="Index" class="btn btn-dark btn-lg px-4 rounded-pill shadow">
+        <i class="bi bi-house-door me-2"></i> Güvenli Ana Sayfaya Dön
+    </a>
+</div>

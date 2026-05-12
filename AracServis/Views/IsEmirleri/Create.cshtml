@@ -1,0 +1,58 @@
+﻿@model AracServis.Models.IsEmirleri
+@{
+    ViewData["Title"] = "Yeni İş Emri (Garaj Girişi)";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                
+                <div class="card-header bg-dark text-white p-4 rounded-top-4 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-car-front-fill me-2"></i>Yeni Araç Girişi</h4>
+                    <a asp-action="Index" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Vazgeç
+                    </a>
+                </div>
+                
+                <div class="card-body p-4 p-md-5 bg-light">
+                    
+                    <div class="alert alert-info border-0 shadow-sm mb-4">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Sistemden randevu almayan, atölyeye direkt gelen müşteriler için buradan manuel iş emri açabilirsiniz. Araç otomatik olarak <b>"Bekliyor"</b> statüsünde garaja alınacaktır.
+                    </div>
+
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-floating mb-4">
+                            <select asp-for="MusteriId" class="form-select fw-bold border-secondary shadow-sm" asp-items="ViewBag.MusteriId" required>
+                                <option value="">--- Müşteri Seçiniz ---</option>
+                            </select>
+                            <label asp-for="MusteriId"><i class="bi bi-person-lines-fill me-2"></i>Kayıtlı Müşteri</label>
+                            <span asp-validation-for="MusteriId" class="text-danger small fw-bold"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="AracPlaka" class="form-control fw-bold border-secondary shadow-sm text-uppercase" placeholder="Örn: 07 ABC 123" required autocomplete="off" />
+                            <label asp-for="AracPlaka"><i class="bi bi-123 me-2"></i>Araç Plakası (TR)</label>
+                            <span asp-validation-for="AracPlaka" class="text-danger small fw-bold"></span>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow">
+                                <i class="bi bi-check2-circle me-2"></i>Garaja Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

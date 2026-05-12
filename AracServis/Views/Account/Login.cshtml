@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = "Giriş Yap";
+    var yorumlar = ViewBag.MusteriYorumlari as IEnumerable<AracServis.Models.Yorum>;
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row align-items-center justify-content-between">
+        
+        <!-- ========================================== -->
+        <!-- SOL TARAF: VİTRİN VE MÜŞTERİ YORUMLARI     -->
+        <!-- ========================================== -->
+        <div class="col-md-6 d-none d-md-block">
+            <div class="text-center mb-4">
+                @if (!string.IsNullOrEmpty(ViewBag.LogoYolu))
+                {
+                    <img src="@ViewBag.LogoYolu" alt="Logo" class="img-fluid mb-3 shadow-sm rounded" style="max-height: 80px; object-fit:contain;" />
+                }
+                else
+                {
+                    <i class="bi bi-tools text-primary display-3 mb-3 d-block"></i>
+                }
+                <h1 class="fw-bold text-dark display-6">@(ViewBag.IsletmeAdi ?? "Araç Servis Yönetimi")</h1>
+                <p class="text-muted fs-5">Güvenilir, Hızlı ve Profesyonel Garaj Otomasyonu</p>
+            </div>
+
+            @if (yorumlar != null && yorumlar.Any())
+            {
+                <div class="card bg-primary text-white border-0 shadow-lg rounded-4 overflow-hidden mt-4">
+                    <div class="card-header bg-transparent border-0 text-center pt-4 pb-0">
+                        <i class="bi bi-chat-quote-fill display-4 opacity-50"></i>
+                        <h5 class="fw-bold mt-2">Müşterilerimiz Ne Diyor?</h5>
+                    </div>
+                    <div class="card-body px-5 pb-5 pt-3">
+                        <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner text-center">
+                                @{
+                                    var isFirst = true;
+                                }
+                                @foreach (var yorum in yorumlar)
+                                {
+                                    <div class="carousel-item @(isFirst ? "active" : "")" data-bs-interval="4000">
+                                        <div class="mb-3 text-warning">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= yorum.Puan)
+                                                {
+                                                    <i class="bi bi-star-fill fs-5"></i>
+                                                }
+                                                else
+                                                {
+
+                                                    <i class="bi bi-star fs-5"></i>
+                                                }
+                                            }
+                                        </div>
+                                        <p class="fst-italic fs-5 mb-4 px-3">"@yorum.YorumMetni"</p>
+                                        <hr class="w-25 mx-auto bg-white opacity-75" />
+                                        <h6 class="fw-bold text-uppercase mb-0">@(yorum.Musteri?.AdSoyad ?? "Müşteri")</h6>
+                                        <small class="opacity-75">@yorum.YorumTarihi.ToString("dd MMMM yyyy")</small>
+                                    </div>
+                                    isFirst = false;
+                                }
+                            </div>
+                            <div class="mt-4">
+                                <button class="btn btn-sm btn-outline-light rounded-circle me-2" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-light rounded-circle" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-5 border-0 rounded-4 bg-light shadow-sm mt-4">
+                    <i class="bi bi-award text-warning display-1 mb-3 d-block"></i>
+                    <h4 class="fw-bold text-dark">Kaliteli Hizmet, Güvenilir İşçilik</h4>
+                    <p class="text-muted">Aracınız için en iyi bakım ve onarım hizmetini sunmak için buradayız. Personel girişi yaparak sistemi yönetmeye başlayabilirsiniz.</p>
+                </div>
+            }
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SAĞ TARAF: GİRİŞ FORMU KARTI               -->
+        <!-- ========================================== -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 rounded-4 mt-5 mt-md-0">
+                <div class="card-header bg-dark text-white rounded-top-4 py-4">
+                    <h4 class="text-center fw-bold mb-0">
+                        <i class="bi bi-shield-lock-fill text-warning me-2"></i> Personel Girişi
+                    </h4>
+                </div>
+                <div class="card-body p-4 p-md-5 bg-white rounded-bottom-4">
+                    <form asp-action="Login" method="post">
+                        
+                        <div class="form-group mb-4">
+                            <label class="form-label text-muted small fw-bold" for="kullaniciAdi">KULLANICI ADI</label>
+                            <div class="input-group input-group-lg shadow-sm">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-person-fill text-primary"></i></span>
+                                <input type="text" id="kullaniciAdi" name="kullaniciAdi" class="form-control bg-light border-0" placeholder="Kullanıcı adınızı girin" required minlength="4" maxlength="20" />
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label text-muted small fw-bold" for="sifre">ŞİFRE</label>
+                            <div class="input-group input-group-lg shadow-sm">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-key-fill text-primary"></i></span>
+                                <input type="password" id="sifre" name="sifre" class="form-control bg-light border-0" placeholder="Şifrenizi girin" required />
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold shadow py-3">
+                                Sisteme Giriş Yap <i class="bi bi-arrow-right-circle ms-2"></i>
+                            </button>
+                            
+                            <a asp-action="Register" class="text-center text-muted mt-3 text-decoration-none">
+                                <small>Sistemde hesabınız yok mu? <b class="text-primary border-bottom border-primary pb-1">Yeni kayıt oluşturun.</b></small>
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,153 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa - Dashboard";
+    
+    // Session'dan kullanıcının adını ve rolünü alıyoruz ki ekranda ismen hitap edebilelim
+    var rol = Context.Session.GetString("RolAdi");
+    var adSoyad = Context.Session.GetString("AdSoyad");
+}
+
+<style>
+    .hover-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .hover-card:hover { transform: translateY(-7px); box-shadow: 0 15px 25px rgba(0,0,0,0.1) !important; }
+    /* Linklerin altı çizilmesin ve renkleri bozulmasın diye */
+    .stat-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+    .stat-link:hover { color: inherit; }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Hoş Geldiniz, @adSoyad!</h2>
+            <p class="text-muted mb-0">
+                Sisteme <strong>@rol</strong> yetkisi ile giriş yaptınız. Bugün dükkanda işler nasıl gidiyor?
+            </p>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <h5 class="text-primary fw-bold mb-0">@DateTime.Now.ToString("dd MMMM yyyy, dddd")</h5>
+            <small class="text-muted">Güncel Sistem Durumu</small>
+        </div>
+    </div>
+
+    @* ========================================== *@
+    @* YÖNETİCİ VE USTA GÖRÜNÜMÜ KONTROLÜ         *@
+    @* ========================================== *@
+    @if (rol == "İşletme Sahibi" || rol == "Çalışan")
+    {
+        <div class="row g-4 mb-5">
+            
+            <div class="col-md-3">
+                <a asp-controller="IsEmirleri" asp-action="Index" class="stat-link">
+                    <div class="card shadow-sm border-0 rounded-4 border-start border-primary border-4 h-100 hover-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.8rem;">Garajdaki Araçlar</p>
+                                    <h2 class="fw-bold mb-0">@ViewBag.GarajdakiAraclar</h2>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                                    <i class="bi bi-tools text-primary fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a asp-controller="Randevular" asp-action="Index" class="stat-link">
+                    <div class="card shadow-sm border-0 rounded-4 border-start border-warning border-4 h-100 hover-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.8rem;">Bekleyen Randevu</p>
+                                    <h2 class="fw-bold mb-0">@ViewBag.BekleyenRandevular</h2>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                                    <i class="bi bi-calendar-event text-warning fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a asp-controller="Admin" asp-action="KullaniciYonetimi" class="stat-link">
+                    <div class="card shadow-sm border-0 rounded-4 border-start border-success border-4 h-100 hover-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.8rem;">Toplam Müşteri</p>
+                                    <h2 class="fw-bold mb-0">@ViewBag.ToplamMusteri</h2>
+                                </div>
+                                <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                    <i class="bi bi-people-fill text-success fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a asp-controller="IsEmirleri" asp-action="Index" class="stat-link">
+                    <div class="card shadow-sm border-0 rounded-4 border-start border-danger border-4 h-100 hover-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.8rem;">Toplam Ciro</p>
+                                    <h2 class="fw-bold text-danger mb-0">@ViewBag.ToplamCiro ₺</h2>
+                                </div>
+                                <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                                    <i class="bi bi-wallet2 text-danger fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <h5 class="fw-bold mb-3">Hızlı İşlemler</h5>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a asp-controller="IsEmirleri" asp-action="Create" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm fw-bold">
+                        <i class="bi bi-plus-circle me-2"></i> Yeni İş Emri Aç
+                    </a>
+                    <a asp-controller="Randevular" asp-action="Index" class="btn btn-warning px-4 py-2 rounded-pill shadow-sm fw-bold text-dark">
+                        <i class="bi bi-calendar-check me-2"></i> Randevuları İncele
+                    </a>
+                    
+                    @* SADECE PATRONA ÖZEL BUTON: Çalışanlar bu butonu göremez *@
+                    @if (rol == "İşletme Sahibi")
+                    {
+                        <a asp-controller="Admin" asp-action="OnayBekleyenler" class="btn btn-dark px-4 py-2 rounded-pill shadow-sm fw-bold">
+                            <i class="bi bi-shield-lock me-2"></i> Başvuruları Yönet
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else if (rol == "Müşteri")
+    {
+        <div class="row mt-5">
+            <div class="col-md-8 mx-auto text-center">
+                <i class="bi bi-car-front-fill display-1 text-primary mb-3 d-block"></i>
+                <h3 class="fw-bold">Aracınız Emin Ellerde!</h3>
+                <p class="text-muted fs-5 mb-4">Yeni bir servis randevusu alabilir veya aracınızın anlık durumunu takip edebilirsiniz.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-controller="Musteri" asp-action="RandevuAl" class="btn btn-primary btn-lg rounded-pill px-5 shadow fw-bold">
+                        <i class="bi bi-calendar-plus me-2"></i> Randevu Al
+                    </a>
+                    <a asp-controller="Musteri" asp-action="Araclarim" class="btn btn-outline-secondary btn-lg rounded-pill px-5 shadow-sm fw-bold">
+                        <i class="bi bi-search me-2"></i> Araç Takip
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

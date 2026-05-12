@@ -1,0 +1,65 @@
+﻿@model AracServis.Models.Kullanicilar
+@{
+    ViewData["Title"] = "Yeni Kayıt";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 rounded-4">
+                
+                <div class="card-header bg-primary text-white p-4 rounded-top-4 text-center">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Kayıt Ol</h3>
+                    <small class="text-white-50">Araç Servis Sistemine Hoş Geldiniz</small>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Register">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small"></div>
+                        
+                        <div class="form-floating mb-4">
+                            <input asp-for="AdSoyad" class="form-control" placeholder="Ad Soyad" required autocomplete="off" />
+                            <label asp-for="AdSoyad"><i class="bi bi-person me-2"></i>Ad Soyad</label>
+                            <span asp-validation-for="AdSoyad" class="text-danger small fw-bold"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="KullaniciAdi" class="form-control" placeholder="Kullanıcı Adı" required autocomplete="off" />
+                            <label asp-for="KullaniciAdi"><i class="bi bi-at me-2"></i>Kullanıcı Adı</label>
+                            <span asp-validation-for="KullaniciAdi" class="text-danger small fw-bold"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Sifre" class="form-control" type="password" placeholder="Şifre" required />
+                            <label asp-for="Sifre"><i class="bi bi-key me-2"></i>Şifre</label>
+                            <span asp-validation-for="Sifre" class="text-danger small fw-bold"></span>
+                        </div>
+                        
+                        <div class="form-floating mb-4">
+                            <select asp-for="RolId" class="form-select fw-bold text-primary" asp-items="ViewBag.RolId" required>
+                            </select>
+                            <label asp-for="RolId"><i class="bi bi-person-badge me-2"></i>Hesap Türü</label>
+                        </div>
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                                <i class="bi bi-check2-circle me-2"></i>Hesap Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light text-center py-4 rounded-bottom-4 border-top-0">
+                    <span class="text-muted small">Zaten hesabınız var mı?</span>
+                    <a asp-action="Login" class="text-primary fw-bold text-decoration-none ms-1">Giriş Yapın</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

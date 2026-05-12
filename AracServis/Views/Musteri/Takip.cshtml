@@ -1,0 +1,120 @@
+﻿@using AracServis.Models
+@model AracServis.Models.IsEmirleri
+@{
+    ViewData["Title"] = "Araç Durum Takibi";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-car-front-fill text-primary me-2"></i> Araç Detay ve Fatura
+        </h2>
+        <a asp-action="Araclarim" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+            <i class="bi bi-arrow-left me-1"></i> Araçlarıma Dön
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-dark text-white p-3 rounded-top-4 text-center">
+                    <h4 class="mb-0 text-uppercase fw-bold" style="letter-spacing: 2px;">
+                        TR | @Model.AracPlaka
+                    </h4>
+                </div>
+                <div class="card-body p-4 text-center">
+                    
+                    <div class="mb-4">
+                        <i class="bi bi-shield-check display-1 text-success"></i>
+                    </div>
+
+                    <h5 class="fw-bold text-muted mb-3">Güncel Durum</h5>
+                    
+                    @{
+                        int percent = 0;
+                        string color = "bg-secondary";
+                        string icon = "bi-clock-history";
+                        string durumMetni = "Bilinmiyor";
+
+                        if (Model.Durum == IsEmriDurumu.Bekliyor) { percent = 33; color = "bg-warning text-dark"; icon = "bi-hourglass-split"; durumMetni = "Bekliyor"; }
+                        else if (Model.Durum == IsEmriDurumu.Islemde) { percent = 66; color = "bg-primary"; icon = "bi-tools"; durumMetni = "İşlemde"; }
+                        else if (Model.Durum == IsEmriDurumu.Tamamlandi) { percent = 100; color = "bg-success"; icon = "bi-check-circle-fill"; durumMetni = "Tamamlandı"; }
+                        else if (Model.Durum == IsEmriDurumu.TeslimEdildi) { percent = 100; color = "bg-dark"; icon = "bi-key-fill"; durumMetni = "Teslim Edildi"; }
+                    }
+
+                    <div class="progress mb-3 shadow-sm" style="height: 35px; border-radius: 20px;">
+                        <div class="progress-bar @color progress-bar-striped progress-bar-animated fw-bold fs-6"
+                             role="progressbar" style="width: @percent%">
+                            <i class="bi @icon me-1"></i> @durumMetni
+                        </div>
+                    </div>
+
+                    <div class="text-start mt-4">
+                        <p class="mb-1"><strong><i class="bi bi-calendar-plus me-2 text-muted"></i>Servis Giriş:</strong> @Model.AcilisTarihi?.ToString("dd MMM yyyy HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center rounded-top-4">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-card-checklist text-primary me-2"></i>Yapılan İşlemler ve Parçalar</h5>
+                    <span class="badge bg-light text-dark border"><i class="bi bi-receipt"></i> Anlık Fatura</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4 py-3">İşlem / Parça Adı</th>
+                                    <th class="text-end pe-4">Fiyat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.IsEmriDetaylaris.Any())
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center py-5 text-muted">
+                                            <i class="bi bi-tools fs-2 d-block mb-2"></i>
+                                            Aracınız için henüz bir parça veya işlem girilmemiştir.<br />
+                                            Ustalarımız aracı incelemeye devam ediyor.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var detay in Model.IsEmriDetaylaris)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-bold text-dark">
+                                                <i class="bi bi-wrench-adjustable me-2 text-muted small"></i>@detay.YapilanIslem
+                                            </td>
+                                            <td class="text-end pe-4 fw-bold text-success">
+                                                @detay.Fiyat.ToString("N2") ₺
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr>
+                                    <td class="ps-4 py-3 fw-bold fs-5">TOPLAM TUTAR:</td>
+                                    <td class="text-end pe-4 py-3 fw-bold fs-4 text-danger">
+                                        @Model.IsEmriDetaylaris.Sum(x => x.Fiyat).ToString("N2") ₺
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                @if (Model.Durum == IsEmriDurumu.Tamamlandi)
+                {
+                    <div class="card-footer bg-success text-white text-center py-3 rounded-bottom-4">
+                        <i class="bi bi-info-circle-fill me-2"></i> Aracınızın işlemleri tamamlanmıştır. Teslim almak için servisimizi ziyaret edebilirsiniz.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

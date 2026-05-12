@@ -1,0 +1,129 @@
+﻿@model IEnumerable<AracServis.Models.Yorum>
+@{
+    ViewData["Title"] = "Müşteri Değerlendirmeleri";
+}
+<div class="container-fluid mt-4 mb-5">
+    <div class="card shadow-lg border-0 rounded-4" style="background-color: #2b3035; color: #fff;">
+        <div class="card-header bg-primary text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-star-fill me-2 text-warning"></i> Müşteri Değerlendirmeleri ve Yorumlar</h4>
+            <span class="badge bg-light text-primary fs-6 shadow-sm">Toplam Yorum: @Model.Count()</span>
+        </div>
+        
+        <div class="card-body p-4 bg-dark rounded-bottom-4">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-secondary border-secondary bg-dark text-light text-center p-5 rounded-4">
+                    <i class="bi bi-chat-square-text text-muted" style="font-size: 4rem;"></i>
+                    <h5 class="mt-3 fw-bold">Henüz hiç yorum yapılmamış.</h5>
+                    <p class="text-muted">Müşterileriniz araçlarını teslim aldıktan sonra buraya değerlendirme bırakabilirler.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var yorum in Model)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-secondary" style="background-color: #212529; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                <div class="card-header border-secondary d-flex justify-content-between align-items-center bg-transparent pt-3 pb-0">
+                                    <h6 class="fw-bold mb-0 text-info">
+                                        <i class="bi bi-person-circle me-1"></i> @yorum.Musteri?.AdSoyad
+                                    </h6>
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-car-front-fill me-1"></i> @yorum.IsEmri?.AracPlaka
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= yorum.Puan)
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-secondary"></i>
+                                            }
+                                        }
+                                        <small class="text-muted ms-2" style="font-size: 0.75rem;">@yorum.YorumTarihi.ToString("dd.MM.yyyy HH:mm")</small>
+                                    </div>
+                                    
+                                    <p class="card-text text-light">"@yorum.YorumMetni"</p>
+
+                                    @if (!string.IsNullOrEmpty(yorum.IsletmeCevabi))
+                                    {
+                                        <div class="mt-3 p-3 rounded" style="background-color: #1a1d20; border-left: 3px solid #198754;">
+                                            <small class="text-success fw-bold"><i class="bi bi-reply-all-fill me-1"></i> İşletme Cevabı:</small>
+                                            <p class="mb-0 mt-1 small text-muted">@yorum.IsletmeCevabi</p>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer border-secondary bg-transparent d-flex justify-content-between align-items-center pb-3">
+                                    <div>
+                                        @if (string.IsNullOrEmpty(yorum.IsletmeCevabi))
+                                        {
+                                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold me-2" data-bs-toggle="modal" data-bs-target="#cevapModal-@yorum.YorumId">
+                                                <i class="bi bi-reply-fill me-1"></i> Cevapla
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success rounded-pill px-3 py-2 me-2"><i class="bi bi-check-circle me-1"></i> Cevaplandı</span>
+                                        }
+
+                                        @if (yorum.OnaylandiMi == false)
+                                        {
+                                            <form asp-action="YorumOnayla" asp-route-id="@yorum.YorumId" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                                                    <i class="bi bi-globe me-1"></i> Yayına Al
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary rounded-pill px-3 py-2"><i class="bi bi-globe me-1"></i> Yayında</span>
+                                        }
+                                    </div>
+
+                                    <form asp-action="YorumSil" asp-route-id="@yorum.YorumId" method="post" onsubmit="return confirm('Bu yorumu sistemden tamamen silmek istediğinize emin misiniz?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle shadow-sm" title="Yorumu Sil">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="cevapModal-@yorum.YorumId" tabindex="-1" data-bs-theme="dark">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-dark text-light border-secondary">
+                                    <div class="modal-header border-secondary">
+                                        <h5 class="modal-title fw-bold"><i class="bi bi-reply-all text-primary me-2"></i> Müşteriye Yanıt Ver</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form asp-action="Cevapla" method="post">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="yorumId" value="@yorum.YorumId" />
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted small"><strong>@yorum.Musteri?.AdSoyad</strong> adlı müşterinin <strong>@yorum.IsEmri?.AracPlaka</strong> plakalı aracı için yazdığı yoruma cevap veriyorsunuz:</label>
+                                                <div class="p-2 mb-3 rounded" style="background-color: #2b3035; border-left: 2px solid #0dcaf0;">
+                                                    <small class="fst-italic text-light">"@yorum.YorumMetni"</small>
+                                                </div>
+                                                <textarea name="isletmeCevabi" class="form-control bg-dark text-light border-secondary" rows="4" placeholder="Müşteriye teşekkür edin veya durumu açıklayın..." required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-secondary">
+                                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">İptal</button>
+                                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold"><i class="bi bi-send-fill me-2"></i> Cevabı Gönder ve Yayınla</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

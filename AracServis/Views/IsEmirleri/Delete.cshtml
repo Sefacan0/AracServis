@@ -1,0 +1,63 @@
+﻿@model AracServis.Models.IsEmirleri
+@{
+    ViewData["Title"] = "İş Emrini İptal Et / Arşive Kaldır";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0 rounded-4 border-top border-danger border-5">
+                
+                <div class="card-header bg-white p-4 text-center border-bottom-0">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-danger display-1"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">İş Emrini Arşive Kaldır</h3>
+                    <p class="text-muted">Bu işlemi onaylarsanız, kayıt atölye listesinden kaldırılacaktır.</p>
+                </div>
+                
+                <div class="card-body p-4 bg-light rounded-bottom-4">
+                    
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h4 class="card-title fw-bold text-center text-uppercase border-bottom pb-3 mb-3" style="letter-spacing: 2px;">
+                                TR | @Model.AracPlaka
+                            </h4>
+                            
+                            <div class="row text-center mb-2">
+                                <div class="col-6 border-end">
+                                    <span class="text-muted d-block small mb-1"><i class="bi bi-person-fill me-1"></i>Müşteri</span>
+                                    <span class="fw-bold">@(Model.Musteri?.AdSoyad ?? "Bilinmiyor")</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="text-muted d-block small mb-1"><i class="bi bi-info-circle-fill me-1"></i>Durum</span>
+                                    <span class="fw-bold text-primary">@Model.Durum</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center">
+                        <i class="bi bi-shield-lock-fill fs-3 me-3"></i>
+                        <div>
+                            <strong>Güvenlik Notu:</strong> Sistem mimarimiz gereği verileriniz kalıcı olarak silinmez (Soft-Delete). İleride doğabilecek fatura ve kayıt uyuşmazlıklarına karşı bu kayıt veritabanında "Arşivlendi" olarak saklanacaktır.
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" class="d-flex justify-content-center gap-3 mt-4">
+                        <input type="hidden" asp-for="IsEmriId" />
+                        
+                        <a asp-action="Index" class="btn btn-secondary btn-lg rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Vazgeç ve Geri Dön
+                        </a>
+                        
+                        <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="bi bi-trash3-fill me-1"></i> Evet, Arşive Kaldır
+                        </button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,75 @@
+﻿@model AracServis.Models.SistemAyarlari
+@{
+    ViewData["Title"] = "İşletme ve Sistem Ayarları";
+}
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="card shadow-lg border-0 rounded-4" style="background-color: #2b3035; color: #fff;">
+        <div class="card-header bg-primary text-white py-3 rounded-top-4">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-gear-fill me-2"></i> İşletme ve Sistem Ayarları</h4>
+        </div>
+        
+        <div class="card-body p-4">
+            <!-- enctype="multipart/form-data" KESİNLİKLE OLMALI (Resim yüklemek için şart) -->
+            <form asp-action="Ayarlar" asp-controller="Admin" method="post" enctype="multipart/form-data">
+                <div class="row g-4">
+                    <!-- İşletme Adı -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted fw-bold">İşletme Tabela Adı</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-light"><i class="bi bi-shop"></i></span>
+                            <input type="text" asp-for="IsletmeAdi" class="form-control bg-dark border-secondary text-light" required />
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp Hattı -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted fw-bold">WhatsApp İletişim Hattı</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-light"><i class="bi bi-whatsapp"></i></span>
+                            <input type="text" asp-for="WpNumarasi" class="form-control bg-dark border-secondary text-light" placeholder="05531205355" />
+                        </div>
+                        <small class="text-secondary">Numarayı başında '+' olmadan bitişik yazınız.</small>
+                    </div>
+
+                    <!-- Logo Yükleme -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted fw-bold">Yeni Logo Yükle</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-light"><i class="bi bi-image"></i></span>
+                            <input type="file" name="yeniLogo" class="form-control bg-dark border-secondary text-light" accept="image/*" />
+                        </div>
+                        <small class="text-secondary">Mevcut logoyu korumak için boş bırakın.</small>
+                        
+                        <!-- Eğer sistemde zaten bir logo varsa altında ufakça gösterelim -->
+                        @if (!string.IsNullOrEmpty(Model?.LogoYolu))
+                        {
+                            <div class="mt-2 p-2 bg-dark rounded border border-secondary d-inline-block">
+                                <img src="@Model.LogoYolu" alt="Mevcut Logo" height="40" />
+                                <span class="ms-2 text-muted small">Mevcut Logo</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Tema Rengi -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted fw-bold">Sistem Tema Rengi</label>
+                        <div class="d-flex align-items-center">
+                            <input type="color" asp-for="ArkaPlanRengi" class="form-control form-control-color bg-dark border-secondary p-1 me-3" title="Tema renginizi seçin">
+                            <span class="text-secondary">Panelin ana tema rengini buradan belirleyin.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-secondary my-4" />
+
+                <div class="d-flex justify-content-end">
+                    <a href="/Home/Index" class="btn btn-outline-secondary rounded-pill px-4 me-2">← Vazgeç</a>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
+                        <i class="bi bi-save me-2"></i> Ayarları Güncelle ve Uygula
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

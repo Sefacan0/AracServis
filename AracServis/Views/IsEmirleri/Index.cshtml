@@ -1,0 +1,127 @@
+﻿@using AracServis.Models
+@model IEnumerable<AracServis.Models.IsEmirleri>
+@{
+    ViewData["Title"] = "Atölye - İş Emirleri";
+}
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-tools text-primary me-2"></i> Atölye / Garajdaki Araçlar
+        </h2>
+        <a asp-action="Create" class="btn btn-primary rounded-pill shadow-sm fw-bold px-4">
+            <i class="bi bi-plus-lg me-1"></i> Manuel İş Emri Aç
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-0">
+            <!-- 1. GÖRSEL HATASI ÇÖZÜMÜ: Dropdown menünün hapsolmaması için overflow: visible eklendi -->
+            <div class="table-responsive" style="overflow: visible;">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4 py-3">Araç Plaka</th>
+                            <th>Müşteri Bilgisi</th>
+                            <th>Giriş Tarihi</th>
+                            <th>Güncel Durum</th>
+                            <th class="text-end pe-4">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-emoji-smile display-4 d-block mb-3"></i>
+                                    Şu an garajda işlem bekleyen veya devam eden araç bulunmuyor.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold fs-5 text-dark">
+                                        <span class="badge bg-light text-dark border shadow-sm">TR | @item.AracPlaka</span>
+                                    </td>
+                                    
+                                    <td>
+                                        <i class="bi bi-person-badge me-1 text-muted"></i> @(item.Musteri?.AdSoyad ?? "Bilinmiyor")
+                                    </td>
+                                    
+                                    <td>
+                                        <i class="bi bi-calendar3 me-1 text-muted"></i> @item.AcilisTarihi?.ToString("dd MMM yyyy HH:mm")
+                                    </td>
+                                    
+                                    <td>
+                                        @{
+                                            string badgeClass = "bg-secondary";
+
+                                            if (item.Durum == IsEmriDurumu.Bekliyor) { badgeClass = "bg-warning text-dark"; }
+                                            else if (item.Durum == IsEmriDurumu.Islemde) { badgeClass = "bg-primary"; }
+                                            else if (item.Durum == IsEmriDurumu.Tamamlandi) { badgeClass = "bg-success"; }
+                                            else if (item.Durum == IsEmriDurumu.TeslimEdildi) { badgeClass = "bg-dark"; }
+                                        }
+                                        <span class="badge @badgeClass px-3 py-2 shadow-sm" style="font-size:0.9rem;">
+                                            @(item.DurumBilgisi?.DurumAdi ?? "Bilinmiyor")
+                                        </span>
+                                    </td>
+                                    
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group shadow-sm me-2">
+                                            <!-- Bounding ayarı eklendi, menü artık tablonun dışına taşabilir -->
+                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle fw-bold" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window">
+                                                <i class="bi bi-arrow-repeat me-1"></i> Durum
+                                            </button>
+                                            <ul class="dropdown-menu shadow border-0 dropdown-menu-end">
+                                                <li>
+                                                    <form asp-action="DurumGuncelle" method="post">
+                                                        <input type="hidden" name="id" value="@item.IsEmriId" />
+                                                        <input type="hidden" name="yeniDurum" value="Bekliyor" />
+                                                        <button type="submit" class="dropdown-item fw-bold text-warning"><i class="bi bi-hourglass-split me-2"></i>Bekliyor</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="DurumGuncelle" method="post">
+                                                        <input type="hidden" name="id" value="@item.IsEmriId" />
+                                                        <input type="hidden" name="yeniDurum" value="Islemde" />
+                                                        <button type="submit" class="dropdown-item fw-bold text-primary"><i class="bi bi-tools me-2"></i>İşlemde</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="DurumGuncelle" method="post">
+                                                        <input type="hidden" name="id" value="@item.IsEmriId" />
+                                                        <input type="hidden" name="yeniDurum" value="Tamamlandi" />
+                                                        <button type="submit" class="dropdown-item fw-bold text-success"><i class="bi bi-check-circle-fill me-2"></i>Tamamlandı</button>
+                                                    </form>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form asp-action="DurumGuncelle" method="post">
+                                                        <input type="hidden" name="id" value="@item.IsEmriId" />
+                                                        <input type="hidden" name="yeniDurum" value="TeslimEdildi" />
+                                                        <button type="submit" class="dropdown-item fw-bold text-dark"><i class="bi bi-key-fill me-2"></i>Teslim Edildi</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <a asp-action="Details" asp-route-id="@item.IsEmriId" class="btn btn-sm btn-info text-white shadow-sm fw-bold me-1" title="Parça ve Fiyat Ekle">
+                                            <i class="bi bi-clipboard-plus me-1"></i> Parça Gir
+                                        </a>
+
+                                        <a asp-action="Delete" asp-route-id="@item.IsEmriId" class="btn btn-sm btn-danger shadow-sm" title="Arşive Kaldır (Sil)">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

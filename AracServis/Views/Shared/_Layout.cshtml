@@ -1,0 +1,304 @@
+﻿@{
+    // KRİTİK ÇÖZÜM: Sayfa render edilmeye (HTML gönderilmeye) başlanmadan hemen önce 
+    var errorMessage = TempData["ErrorMessage"]?.ToString();
+    var successMessage = TempData["SuccessMessage"]?.ToString();
+    var warningMessage = TempData["WarningMessage"]?.ToString();
+
+    // ==============================================================
+    // 🌟 SİSTEM AYARLARI VE İSİM MASKELEME ALGORİTMASI 🌟
+    // ==============================================================
+    string isletmeAdi = Context.Session.GetString("IsletmeAdi") ?? "Araç Servis";
+    string logoYolu = Context.Session.GetString("LogoYolu") ?? "";
+    string tamIsim = Context.Session.GetString("AdSoyad") ?? "Misafir";
+    string maskeliIsim = tamIsim;
+
+    // İsmi Y**** C** formatına çevirme işlemi
+    if (tamIsim != "Misafir" && tamIsim.Contains(" "))
+    {
+        var isimParcalari = tamIsim.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (isimParcalari.Length >= 2)
+        {
+            string ad = isimParcalari[0];
+            string soyad = isimParcalari[isimParcalari.Length - 1]; // Birden fazla isim varsa sonuncuyu soyad kabul et
+            
+            string maskeliAd = ad.Substring(0, 1) + new string('*', ad.Length > 1 ? ad.Length - 1 : 1);
+            string maskeliSoyad = soyad.Substring(0, 1) + new string('*', soyad.Length > 1 ? soyad.Length - 1 : 1);
+            
+            maskeliIsim = maskeliAd + " " + maskeliSoyad;
+        }
+    }
+}
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @isletmeAdi</title>
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AracServis.styles.css" asp-append-version="true" />
+
+    <script>
+        const earlyTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', earlyTheme);
+    </script>
+
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: 0.3s; } 
+        .navbar-brand { font-weight: 700; color: #0d6efd !important; } 
+        .nav-link { font-weight: 500; transition: 0.3s; }
+        .nav-link:hover { color: #0d6efd !important; } 
+        .dropdown-menu { border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        /* DARK MODE ÖZEL CSS'LERİ */
+        [data-bs-theme="dark"] body { background-color: #212529; color: #f8f9fa; }
+        [data-bs-theme="dark"] .navbar { background-color: #2b3035 !important; border-bottom: 1px solid #495057 !important; }
+        [data-bs-theme="dark"] .nav-link, [data-bs-theme="dark"] .navbar-text { color: #dee2e6 !important; }
+        [data-bs-theme="dark"] .footer { background-color: #2b3035 !important; color: #adb5bd !important; border-top: 1px solid #495057 !important;}
+        [data-bs-theme="dark"] .card { background-color: #2b3035; border-color: #495057; }
+        [data-bs-theme="dark"] .table { color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-toggleable-sm border-bottom mb-3 bg-light" id="mainNavbar">
+            <div class="container-fluid">
+                
+                @if (Context.Session.GetString("RolAdi") == "İşletme Sahibi")
+                {
+                    <a class="navbar-brand fw-bold d-flex align-items-center" asp-area="" asp-controller="Admin" asp-action="Ayarlar">
+                        @if (!string.IsNullOrEmpty(logoYolu)) {
+                            <img src="@logoYolu" alt="Logo" height="30" class="me-2 rounded shadow-sm" style="object-fit: contain;" />
+                        } else {
+                            <i class="bi bi-gear-wide-connected text-danger me-2"></i>
+                        }
+                        <span>@isletmeAdi</span>
+                    </a>
+                }
+                else
+                {
+                    <a class="navbar-brand fw-bold d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                        @if (!string.IsNullOrEmpty(logoYolu)) {
+                            <img src="@logoYolu" alt="Logo" height="30" class="me-2 rounded shadow-sm" style="object-fit: contain;" />
+                        } else {
+                            <i class="bi bi-tools text-primary me-2"></i>
+                        }
+                        <span>@isletmeAdi</span>
+                    </a>
+                }
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        
+                        @if (Context.Session.GetInt32("KullaniciID") != null)
+                        {
+                            var rol = Context.Session.GetString("RolAdi");
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                                </a>
+                            </li>
+
+                            @if (rol == "İşletme Sahibi" || rol == "Çalışan")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="IsEmirleri" asp-action="Index">
+                                        <i class="bi bi-wrench-adjustable me-1"></i> Atölye / Garaj
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">
+                                        <i class="bi bi-calendar-check me-1"></i> Randevular
+                                    </a>
+                                </li>
+                            }
+
+                            @if (rol == "Müşteri")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Musteri" asp-action="RandevuAl">
+                                        <i class="bi bi-calendar-plus me-1"></i> Randevu Al
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Musteri" asp-action="Araclarim">
+                                        <i class="bi bi-car-front me-1"></i> Araçlarım
+                                    </a>
+                                </li>
+                            }
+
+                            @if (rol == "İşletme Sahibi")
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-primary fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-shield-lock me-1"></i> Yönetim
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="OnayBekleyenler"><i class="bi bi-person-check me-2"></i>Başvuru Onayları</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="KullaniciYonetimi"><i class="bi bi-people me-2"></i>Personel Yönetimi</a></li>
+                                        
+                                        <li><a class="dropdown-item" asp-controller="Yorumlar" asp-action="Index"><i class="bi bi-chat-quote-fill text-warning me-2"></i>Müşteri Yorumları</a></li>
+                                        
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Ayarlar"><i class="bi bi-sliders me-2"></i>Sistem Ayarları</a></li>
+                                    </ul>
+                                </li>
+                            }
+
+                            <li class="nav-item ms-auto">
+                                <div class="d-flex align-items-center mt-2 mt-sm-0">
+                                    
+                                    <span id="liveWeather" class="navbar-text me-3 fw-bold small text-primary d-none d-lg-block" title="Antalya Canlı Hava Durumu">
+                                        <i class="bi bi-cloud-sun me-1"></i> Yükleniyor...
+                                    </span>
+
+                                    <span id="liveClock" class="navbar-text me-3 fw-bold small border-end pe-3 d-none d-xl-block" style="color: #6c757d;">
+                                        <i class="bi bi-clock me-1"></i> ...
+                                    </span>
+
+                                    <button id="themeToggleBtn" class="btn btn-sm btn-outline-warning rounded-circle me-3" title="Temayı Değiştir">
+                                        <i id="themeIcon" class="bi bi-lightbulb-fill"></i>
+                                    </button>
+
+                                    <span class="navbar-text me-3 text-muted small fw-bold" title="@tamIsim">
+                                        <i class="bi bi-person-circle text-primary me-1"></i> @maskeliIsim
+                                    </span>
+
+                                    <a class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm" asp-controller="Account" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right"></i> Çıkış
+                                    </a>
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item ms-auto">
+                                <a class="nav-link text-primary fw-bold" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-lock-fill"></i> Personel Girişi
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted mt-auto py-3 bg-light">
+        <div class="container text-center">
+            &copy; @DateTime.Now.Year - <strong class="text-primary">@isletmeAdi</strong> 
+            <span class="mx-2">|</span> 
+            <small>Antalya Teknik Destek</small>
+        </div>
+    </footer>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            // KRİTİK ÇÖZÜM: Tarayıcının "Geri" veya "İleri" tuşuyla gelinip gelinmediğini kontrol ediyoruz
+            const isBackButton = performance.getEntriesByType("navigation")[0]?.type === "back_forward";
+
+            // Eğer sayfa normal yüklenmişse (geri tuşuyla gelinmemişse) mesajları göster
+            if (!isBackButton) {
+                // 1. SWEET ALERT MESAJLARI 
+                @if (!string.IsNullOrEmpty(errorMessage)) 
+                { 
+                    <text>Swal.fire({ icon: 'error', title: 'Hata!', text: '@Html.Raw(errorMessage)', confirmButtonColor: '#d33', confirmButtonText: 'Tamam' });</text> 
+                }
+                @if (!string.IsNullOrEmpty(successMessage)) 
+                { 
+                    <text>Swal.fire({ icon: 'success', title: 'Başarılı!', text: '@Html.Raw(successMessage)', confirmButtonColor: '#28a745', confirmButtonText: 'Harika' });</text> 
+                }
+                @if (!string.IsNullOrEmpty(warningMessage)) 
+                { 
+                    <text>Swal.fire({ icon: 'warning', title: 'Bilgi', text: '@Html.Raw(warningMessage)', confirmButtonColor: '#ffc107', confirmButtonText: 'Anladım' });</text> 
+                }
+            }
+
+            // 2. DARK MODE / TEMA YÖNETİMİ
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.documentElement;
+
+            const currentTheme = body.getAttribute('data-bs-theme');
+            updateThemeIcons(currentTheme);
+
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    const newTheme = body.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    body.setAttribute('data-bs-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateThemeIcons(newTheme);
+                });
+            }
+
+            function updateThemeIcons(theme) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'bi bi-lightbulb-off text-light';
+                    if (themeBtn) themeBtn.className = 'btn btn-sm btn-outline-secondary rounded-circle me-3';
+                } else {
+                    themeIcon.className = 'bi bi-lightbulb-fill text-warning';
+                    if (themeBtn) themeBtn.className = 'btn btn-sm btn-outline-warning rounded-circle me-3';
+                }
+            }
+
+            // 3. CANLI SAAT MOTORU
+            const clockElement = document.getElementById('liveClock');
+            if (clockElement) {
+                function updateClock() {
+                    const now = new Date();
+                    const dateStr = now.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    clockElement.innerHTML = `<i class="bi bi-calendar3 me-1"></i>${dateStr} <i class="bi bi-clock ms-2 me-1"></i>${timeStr}`;
+                }
+                setInterval(updateClock, 1000);
+                updateClock();
+            }
+
+            // 4. CANLI HAVA DURUMU (ANTALYA)
+            const weatherElement = document.getElementById('liveWeather');
+            if (weatherElement) {
+                async function fetchWeather() {
+                    try {
+                        const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=36.9081&longitude=30.6956&current_weather=true');
+                        const data = await response.json();
+                        const temp = data.current_weather.temperature;
+                        const isDay = data.current_weather.is_day;
+                        
+                        let icon = isDay === 1 ? '<i class="bi bi-sun-fill text-warning me-1"></i>' : '<i class="bi bi-moon-stars-fill text-primary me-1"></i>';
+                        weatherElement.innerHTML = `${icon} Antalya: ${temp}°C`;
+                    } catch (error) {
+                        weatherElement.innerHTML = '<i class="bi bi-cloud-slash text-secondary me-1"></i> Bağlantı Yok';
+                    }
+                }
+                fetchWeather();
+                setInterval(fetchWeather, 1800000); // 30 dakikada bir güncelle
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

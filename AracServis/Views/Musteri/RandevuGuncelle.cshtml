@@ -1,0 +1,37 @@
+﻿@model AracServis.Models.Randevu
+@{
+    ViewData["Title"] = "Randevu Düzenle";
+}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-dark text-white text-center py-4 rounded-top-4">
+                    <h3 class="fw-bold mb-0"><i class="bi bi-pencil-square text-warning me-2"></i> Randevu Düzenle</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="RandevuGuncelle" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="RandevuId" />
+                        <input type="hidden" asp-for="ArizaGorselYolu" />
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Araç Plakası</label>
+                            <input asp-for="AracPlaka" class="form-control form-control-lg text-uppercase fw-bold border-warning" required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Şikayetiniz</label>
+                            <textarea asp-for="SikayetAciklamasi" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Yeni Görsel (İsteğe Bağlı)</label>
+                            <input type="file" name="GorselDosyasi" class="form-control" accept="image/*" />
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg rounded-pill fw-bold shadow-sm">Kaydet</button>
+                            <a asp-action="Araclarim" class="btn btn-outline-secondary rounded-pill">İptal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

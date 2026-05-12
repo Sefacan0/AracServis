@@ -1,0 +1,60 @@
+﻿@model AracServis.Models.Randevu
+@{
+    ViewData["Title"] = "Randevu Sil";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4 border-top border-danger border-5">
+                
+                <div class="card-header bg-white p-4 text-center border-bottom-0">
+                    <div class="mb-3">
+                        <i class="bi bi-trash3-fill text-danger display-1"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">Randevuyu Sil</h3>
+                    <p class="text-muted">Bu işlemi onaylarsanız, randevu talebi kalıcı olarak silinecektir.</p>
+                </div>
+                
+                <div class="card-body p-4 bg-light rounded-bottom-4">
+                    
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-center border-bottom pb-3 mb-3">
+                                <i class="bi bi-calendar-event text-primary me-2"></i> @Model.TalepTarihi.ToString("dd MMM yyyy - HH:mm")
+                            </h5>
+                            
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent px-0 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted"><i class="bi bi-person-fill me-2"></i>Müşteri:</span>
+                                    <span class="fw-bold">@(Model.Musteri?.AdSoyad ?? "Bilinmiyor")</span>
+                                </li>
+                                <li class="list-group-item bg-transparent px-0 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted"><i class="bi bi-car-front-fill me-2"></i>Plaka:</span>
+                                    <span class="fw-bold text-uppercase">TR | @Model.AracPlaka</span>
+                                </li>
+                                <li class="list-group-item bg-transparent px-0 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted"><i class="bi bi-info-circle-fill me-2"></i>Durum:</span>
+                                    <span class="fw-bold text-danger">@Model.Durum</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" class="d-flex justify-content-center gap-3">
+                        <input type="hidden" asp-for="RandevuId" />
+                        
+                        <a asp-action="Index" class="btn btn-secondary btn-lg rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Vazgeç
+                        </a>
+                        
+                        <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="bi bi-trash3-fill me-1"></i> Kalıcı Olarak Sil
+                        </button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

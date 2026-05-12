@@ -1,0 +1,162 @@
+﻿@using AracServis.Models
+@model AracServis.Models.IsEmirleri
+@{
+    ViewData["Title"] = "Araç Servis Detayları";
+    var toplamMaliyet = Model.IsEmriDetaylaris?.Sum(d => d.Fiyat) ?? 0;
+    var yorum = ViewBag.MusteriYorumu as AracServis.Models.Yorum;
+}
+
+<div class="container mt-4 mb-5">
+    
+    <div class="mb-3">
+        <a asp-action="Araclarim" class="btn btn-outline-secondary btn-sm rounded-pill shadow-sm fw-bold">
+            <i class="bi bi-arrow-left me-1"></i> Geri Dön
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 rounded-4 mb-4">
+                <div class="card-header bg-dark text-white rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt me-2 text-warning"></i> Servis Faturası ve Detaylar</h5>
+                    <span class="badge bg-light text-dark fs-6">TR | @Model.AracPlaka</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4 text-muted">
+                        <div class="col-sm-6">
+                            <small class="d-block fw-bold text-uppercase">Servis Giriş Tarihi</small>
+                            <span class="fs-5 text-dark">@Model.AcilisTarihi?.ToString("dd MMMM yyyy, HH:mm")</span>
+                        </div>
+                        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                            <small class="d-block fw-bold text-uppercase">Güncel Süreç</small>
+                            <span class="fs-5 text-primary fw-bold">@(Model.DurumBilgisi?.DurumAdi ?? "Bilinmiyor")</span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-dark">Yapılan İşlemler ve Değişen Parçalar</h6>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead class="text-secondary">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Açıklama / Parça Adı</th>
+                                    <th class="text-end">Tutar (₺)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.IsEmriDetaylaris != null && Model.IsEmriDetaylaris.Any())
+                                {
+                                    int sayac = 1;
+                                    foreach (var detay in Model.IsEmriDetaylaris)
+                                    {
+                                        <tr>
+                                            <td class="text-muted">@sayac</td>
+                                            <td class="fw-bold text-dark">
+                                                <i class="bi bi-tools text-muted me-2"></i>@detay.YapilanIslem
+                                            </td>
+                                            <td class="text-end fw-bold text-success">@detay.Fiyat.ToString("N2") ₺</td>
+                                        </tr>
+                                        sayac++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">
+                                            <i class="bi bi-hourglass-split me-1"></i> Araca henüz bir parça veya işçilik eklenmemiş.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="2" class="text-end fw-bold fs-5 pt-3">GENEL TOPLAM:</td>
+                                    <td class="text-end fw-bold fs-4 text-danger pt-3">@toplamMaliyet.ToString("N2") ₺</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 bg-light h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-chat-quote-fill display-1 text-primary opacity-25 mb-3"></i>
+                    <h4 class="fw-bold mb-4">Değerlendirmeniz</h4>
+                    
+                    @if (yorum != null)
+                    {
+                        <div class="bg-white p-4 rounded-4 shadow-sm text-start border-start border-4 border-warning">
+                            <div class="text-warning mb-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= yorum.Puan)
+                                    {
+                                        <i class="bi bi-star-fill fs-5"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="bi bi-star fs-5"></i>
+                                    }
+                                }
+                            </div>
+                            <p class="fst-italic text-muted mb-3">"@yorum.YorumMetni"</p>
+                            <small class="text-secondary fw-bold">@yorum.YorumTarihi.ToString("dd MMM yyyy")</small>
+                            <br />
+                            @if (yorum.OnaylandiMi == true)
+                            {
+                                <span class="badge bg-success mt-2"><i class="bi bi-check-circle me-1"></i> Yayında</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary mt-2"><i class="bi bi-clock me-1"></i> Patron Onayı Bekliyor</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        @if (Model.Durum == IsEmriDurumu.TeslimEdildi)
+                        {
+                            <p class="text-muted small">Aracınızı teslim aldınız. Hizmetimizi nasıl buldunuz?</p>
+                            
+                            <form asp-controller="Yorumlar" asp-action="YorumYap" method="post" class="text-start mt-3">
+                                <input type="hidden" name="isEmriId" value="@Model.IsEmriId" />
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-muted">PUANINIZ</label>
+                                    <select name="puan" class="form-select border-0 shadow-sm text-warning fw-bold" required>
+                                        <option value="5">⭐⭐⭐⭐⭐ Mükemmel</option>
+                                        <option value="4">⭐⭐⭐⭐ İyi</option>
+                                        <option value="3">⭐⭐⭐ İdare Eder</option>
+                                        <option value="2">⭐⭐ Kötü</option>
+                                        <option value="1">⭐ Çok Kötü</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-muted">YORUMUNUZ</label>
+                                    <textarea name="yorumMetni" class="form-control border-0 shadow-sm" rows="3" placeholder="Hizmetimiz hakkında ne düşünüyorsunuz?" required maxlength="250"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-warning rounded-pill fw-bold w-100 shadow-sm">
+                                    <i class="bi bi-send-fill me-1"></i> Yorumu Gönder
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <p class="text-muted">Bu servis işlemi için henüz bir değerlendirme yapmadınız. Aracınızı teslim aldıktan sonra bize puan verebilirsiniz.</p>
+                            <button class="btn btn-secondary rounded-pill fw-bold w-100 mt-3" disabled>
+                                <i class="bi bi-lock-fill me-1"></i> Araç Teslimini Bekleyin
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
